@@ -1,13 +1,13 @@
 <html>
 <head><meta charset="utf-8"><!-- --></head>
 <!-- 
-// Hangul Converter 0.2.0(fine name: font_test000.html)
-// code name: Characters Agent Decoder 2021.10.2
-// San Junipero 2021.9.25(uv337@naver.com)
+// Hangul Converter 0.1.0(code name: font_test000.html)
+// Sang-Jun Park 2021.9.25(uv337@naver.com)
 // Apache License ,or  GNU GPL
 // source1 : MDN Web Docs , Moz://a
 // source2 : unicode.org
 // test : ubuntu20LTS,firefox92nightly
+// [index.html] font_test47.html :  widows1252 and dos832 both  decoding agent engine.
 -->
 <h3> 한글 인코딩 호환성 : 글자깨짐현상</h3>
 <p id='source'>
@@ -18,15 +18,15 @@
 <h3>깨진 글자들 (붙여넣기)입력:</h3>
 <textarea id='textContentInput' rows='6' cols='30' ></textarea>
 <br>
-<input type='button' value='변환' onClick='conv_click(this)'>
-<!-- even_or_odd(), conv_click(this)  -->
+<input type='button' value='변환' onClick='mag_num();'>
+<!-- even_or_odd(), conv_click(this),mag_num  -->
 <br>
 <h3>한글 결과:</h3>
 <textarea id='innerTextOutput' rows='6' cols='30' readonly></textarea>  <!-- [error 1]readonly  --->
 
 <hr>
 <h3>[참고] 깨진한글이 들어있는 파일을 통채로 다루려면 노트패드큐(https://github.com/uv337/notepadQ ,빌드 요함)를 사용하세요.<h3>
-  
+
 <script>
 const source = document.getElementById('source');
 const textContentInput = document.getElementById('textContentInput');
@@ -38,9 +38,10 @@ let  conv_char0;
 let  conv_char1;
 var  conv_text;
 var  conv_code;
+let  mag_num_windows1252 = 0;
 
-function conv_click(){
 
+///////////////////////////////////////////////////////////////
 /*
 //#    Name:     cp949 to Unicode table
 //#    Unicode version: 2.0
@@ -17109,12 +17110,17 @@ let c2u = { '8141':'\uAC02',
 'FDFD':'\u7FB2', 
 'FDFE':'\u8A70' };
 
-let win12 = {160:'A0',161:'A1',162:'A2',163:'A3',164:'A4',165:'A5',166:'A6',167:'A7',168:'A8',169:'A9',170:'AA',171:'AB',172:'AC',173:'AD',174:'AE',175:'AF',176:'B0',177:'B1',178:'B2',179:'B3',180:'B4',181:'B5',182:'B6',183:'B7',184:'B8',185:'B9',186:'BA',187:'BB',188:'BC',189:'BD',190:'BE',191:'BF',192:'C0',193:'C1',194:'C2',195:'C3',196:'C4',197:'C5',198:'C6',199:'C7',200:'C8',201:'C9',202:'CA',203:'CB',204:'CC',205:'CD',206:'CE',207:'CF',208:'D0',209:'D1',210:'D2',211:'D3',212:'D4',213:'D5',214:'D6',215:'D7',216:'D8',217:'D9',218:'DA',219:'DB',220:'DC',221:'DD',222:'DE',223:'DF',224:'E0',225:'E1',226:'E2',227:'E3',228:'E4',229:'E5',230:'E6',231:'E7',232:'E8',233:'E9',234:'EA',235:'EB',236:'EC',237:'ED',238:'EE',239:'EF',240:'F0',241:'F1',242:'F2',243:'F3',244:'F4',245:'F5',246:'F6',247:'F7',248:'F8',249:'F9',250:'FA',251:'FB',252:'FC',253:'FD',254:'FE',255:'FF'};
+
+
+function dos862_func(){
+
+let dos862 = {225:'A0',237:'A1',243:'A2',250:'A3',241:'A4',209:'A5',170:'A6',186:'A7',191:'A8',8976:'A9',172:'AA',189:'AB',188:'AC',161:'AD',171:'AE',187:'AF',9617:'B0',9618:'B1',9619:'B2',9474:'B3',9508:'B4',9569:'B5',9570:'B6',9558:'B7',9557:'B8',9571:'B9',9553:'BA',9559:'BB',9565:'BC',9564:'BD',9563:'BE',9488:'BF',9492:'C0',9524:'C1',9516:'C2',9500:'C3',9472:'C4',9532:'C5',9566:'C6',9567:'C7',9562:'C8',9556:'C9',9577:'CA',9574:'CB',9568:'CC',9552:'CD',9580:'CE',9575:'CF',9576:'D0',9572:'D1',9573:'D2',9561:'D3',9560:'D4',9554:'D5',9555:'D6',9579:'D7',9578:'D8',9496:'D9',9484:'DA',9608:'DB',9604:'DC',9612:'DD',9616:'DE',9600:'DF',945:'E0',223:'E1',915:'E2',960:'E3',931:'E4',963:'E5',181:'E6',964:'E7',934:'E8',920:'E9',937:'EA',948:'EB',8734:'EC',966:'ED',949:'EE',8745:'EF',8801:'F0',177:'F1',8805:'F2',8804:'F3',8992:'F4',8993:'F5',247:'F6',8776:'F7',176:'F8',8729:'F9',183:'FA',8730:'FB',8319:'FC',178:'FD',9632:'FE'};
 //alert('test123...');  // test tracer()
 //alert(source.textContent);
 //alert(textContentInput.value);
 
 conv_charset = textContentInput.value;
+
 //alert(conv_charset.length);
 //if (conv_charset.length)
 var a;
@@ -17123,15 +17129,30 @@ conv_code ='';
 var nx=1;
 var conv_char1_code;
 var conv_char2;
-for(var n=0;n<conv_charset.length; n++){
-//alert(win12Map.get(200));
-//alert(conv_charset.charCodeAt(n)+'-'+conv_charset.substring(n,n+1));
+var key_array = [];
+ key_array = Object.keys(dos862);
+/* ==> function magicnumber mag_num();
+ var key_array2 = [];
+ key_array2 = Object.keys(win1252);
+alert(key_array2);
+*/
 
-if(conv_charset.charCodeAt(n) <= 159 || conv_charset.charCodeAt(n) >=256 ) {  // if[1]
+for(var n=0;n<conv_charset.length; n++){
+//alert(dos862Map.get(200));
+//alert(conv_charset.charCodeAt(n)+'-'+conv_charset.substring(n,n+1));
+//alert(key_array);
+
+ //alert(conv_charset.charCodeAt(n));
+
+ 
+ if(key_array.indexOf(String(conv_charset.charCodeAt(n))) == -1) {  // if[1]
+
 //alert('0');
 conv_text += conv_charset.substring(n,n+1);
 //alert(conv_text);
 } else {
+
+
 /*  TERM : eve_or_odd()   */
 if(nx  == 1) {    // if(n % 2 == 0): eve_or_odd() --> counting : nx
 //alert('even(1)');
@@ -17139,7 +17160,7 @@ conv_char0='';
 }else {//alert('odd(1)');
 }
 
-conv_char0 =win12[conv_charset.charCodeAt(n)]; // charCodeAt() utf-16  == , >> windows-1252 : ok
+conv_char0 =dos862[conv_charset.charCodeAt(n)]; // charCodeAt() utf-16  == , >> windows-1252 : ok
 //alert(conv_char0);
 conv_char1 += conv_char0.replace(/undefined/gi,'');
 
@@ -17158,8 +17179,7 @@ conv_char1='';
 nx = 1;
 }
 } //END if[1]
-}// for(;;) ENd
-
+}// END for(;;)
 //alert(String(a));
 //innerTextOutput.value = '';
 //innerTextOutput.innerHTML = '123';
@@ -17175,7 +17195,66 @@ innerTextOutput.innerHTML = conv_text;
 //alert(b);
 //document.write('\\u'+a);
 
-}// conv_click() END
+}// END dos862_func()
+
+function windows1252_func() {
+let win1252 = {160:'A0',161:'A1',162:'A2',163:'A3',164:'A4',165:'A5',166:'A6',167:'A7',168:'A8',169:'A9',170:'AA',171:'AB',172:'AC',173:'AD',174:'AE',175:'AF',176:'B0',177:'B1',178:'B2',179:'B3',180:'B4',181:'B5',182:'B6',183:'B7',184:'B8',185:'B9',186:'BA',187:'BB',188:'BC',189:'BD',190:'BE',191:'BF',192:'C0',193:'C1',194:'C2',195:'C3',196:'C4',197:'C5',198:'C6',199:'C7',200:'C8',201:'C9',202:'CA',203:'CB',204:'CC',205:'CD',206:'CE',207:'CF',208:'D0',209:'D1',210:'D2',211:'D3',212:'D4',213:'D5',214:'D6',215:'D7',216:'D8',217:'D9',218:'DA',219:'DB',220:'DC',221:'DD',222:'DE',223:'DF',224:'E0',225:'E1',226:'E2',227:'E3',228:'E4',229:'E5',230:'E6',231:'E7',232:'E8',233:'E9',234:'EA',235:'EB',236:'EC',237:'ED',238:'EE',239:'EF',240:'F0',241:'F1',242:'F2',243:'F3',244:'F4',245:'F5',246:'F6',247:'F7',248:'F8',249:'F9',250:'FA',251:'FB',252:'FC',253:'FD',254:'FE',255:'FF'};
+
+conv_charset = textContentInput.value;
+
+//alert(conv_charset.length);
+//if (conv_charset.length)
+var a;
+conv_text = '';
+conv_code ='';
+var nx=1;
+var conv_char1_code;
+var conv_char2;
+
+for(var n=0;n<conv_charset.length; n++){
+//alert(dos862Map.get(200));
+//alert(conv_charset.charCodeAt(n)+'-'+conv_charset.substring(n,n+1));
+if(conv_charset.charCodeAt(n) <= 159 || conv_charset.charCodeAt(n) >=256 ) {  // if[1]
+//alert('0');
+conv_text += conv_charset.substring(n,n+1);
+//alert(conv_text);
+} else {
+
+
+/*  TERM : eve_or_odd()   */
+if(nx  == 1) {    // if(n % 2 == 0): eve_or_odd() --> counting : nx
+//alert('even(1)');
+conv_char0='';
+}else {//alert('odd(1)');
+}
+
+conv_char0 =win1252[conv_charset.charCodeAt(n)]; // charCodeAt() utf-16  == , >> windows-1252 : ok
+//alert(conv_char0);
+conv_char1 += conv_char0.replace(/undefined/gi,'');
+
+if(nx == 1 ) {    // eve_or_odd()
+//alert('even(2)');
+nx = 2;
+} else if(nx==2) {
+//var a = c2uMap.get(conv_char1.replace(/undefined/gi,''));
+ a = c2u[conv_char1.replace(/undefined/gi,'')];
+//var b = '\\u'+c2uMap.get(conv_char1.replace(/undefined/gi,'')).slice(2);
+//alert('odd(2)');
+conv_text += String(a);   //document.write('\uD558');
+//conv_code += b;  // unicode viewer : failed()
+conv_char1_code += conv_char1.replace(/undefined/gi,'');
+conv_char1='';
+nx = 1;
+}
+} //END if[1]
+} //END for();;
+
+alert(conv_text + "\n ["+ conv_char1_code.replace(/undefined/gi,'')+"]");
+//alert(conv_code);
+//innerTextOutput.innerHTML.value ='';
+innerTextOutput.innerHTML = conv_text;
+
+}// END windows1252_func()
 
 function conv_char(){
 
@@ -17189,6 +17268,46 @@ var num =3;     // 4,0,3
   alert('odd');
   } 
 }
+
+/* magic number 
+  start half code section: B0~C8
+*/
+function mag_num(){
+conv_charset = textContentInput.value;
+ //var key_array2 = [];
+ //key_array2 = Object.keys(win1252);
+ // key_array2 = {160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
+// ==> 160~255
+let dos862_table =[9472,9474,9484,9488,9492,9496,9500,9508,9516,9524,9532,9552,9553,9554,9555,9556,9557,9558,9559,9560,9561,9562,9563,9564,9565,9566,9567,9568,9569,9570,9571,9572,9573,9574,9575,9576,9577,9578,9579,9580,9600,9604,9608,9612,9616,9617,9618,9619,9632];
+
+for(var n=0;n<conv_charset.length; n++){  
+console.log(conv_charset.charCodeAt(n));
+if(dos862_table.indexOf(Number(conv_charset.charCodeAt(n))) >= 0) {   //if[1]
+mag_num_windows1252 = 0;  //false : dos862
+ break;
+
+}else {
+mag_num_windows1252 = 1; // true : windows1252
+}//END if[1]
+}//END for(;;)
+//alert('999');
+console.log("mag_num_windows1252 : "+  mag_num_windows1252);
+conv_click();
+}//ENd mag_num() 
+
+
+function conv_click(){
+
+if (mag_num_windows1252 == 0){
+dos862_func();
+} else if(mag_num_windows1252 ==1) {
+windows1252_func();
+}
+
+}//conv_click() END
+
+
+
 </script>
 
 <!-- 깨진글자 테스트 샘플 (broken character test sample) -->
